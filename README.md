@@ -4,6 +4,18 @@
 
 上傳 Word 論文及學校格式要求，先查看預計修改的條列清單，再確認產生 Word 與修改說明。
 
+## 系統功能與分析流程圖
+
+### 系統功能圖
+
+![論文完稿室系統功能圖](docs/images/system-features.png)
+
+### 分析流程圖
+
+![論文完稿室分析流程圖](docs/images/analysis-workflow.png)
+
+[圖解與文字說明](docs/diagrams.md) · [繪圖 Prompt](docs/diagram-prompts.md)
+
 ## 使用流程
 
 1. 上傳未加密的 `.docx` 論文（最大 30 MB）。
