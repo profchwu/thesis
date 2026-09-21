@@ -1,4 +1,4 @@
-# 論文整稿室
+# 論文完稿室
 
 線上使用：https://profchwu.github.io/thesis/
 
