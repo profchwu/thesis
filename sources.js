@@ -1,4 +1,4 @@
-import {verifyReference,doiFrom} from './ai-core.js?v=20260921-original7';
+import {verifyReference,doiFrom} from './ai-core.js?v=20260921-direct8';
 export const DATABASES={crossref:{name:'Crossref',home:'https://search.crossref.org/',mode:'api'},openalex:{name:'OpenAlex',home:'https://openalex.org/',mode:'api'},pubmed:{name:'PubMed',home:'https://pubmed.ncbi.nlm.nih.gov/',mode:'api'},airiti:{name:'華藝線上圖書館',home:'https://www.airitilibrary.com/',mode:'manual'},ndltd:{name:'臺灣博碩士論文知識加值系統',home:'https://ndltd.ncl.edu.tw/',mode:'manual'},wos:{name:'Web of Science',home:'https://www.webofscience.com/',mode:'manual'},scopus:{name:'Scopus',home:'https://www.scopus.com/',mode:'manual'},refcheck:{name:'RefCheck（外部參考工具）',home:'https://ref-check.org/',mode:'manual'},scholar:{name:'Google Scholar',home:'https://scholar.google.com/',mode:'manual'}};
 const clean=value=>String(value||'').replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim();
 let lastPubmed=0;

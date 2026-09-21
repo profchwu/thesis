@@ -29,3 +29,5 @@
 
 #basic-results .reference-comparison{display:grid;grid-template-columns:1fr}#basic-results .reference-comparison>section{padding:6px 10px}#basic-format-detail .reference-comparison{margin:6px 0;gap:6px}#basic-format-detail .reference-comparison>section{padding:8px 12px}#basic-format-detail .reference-comparison p{font-size:13px;line-height:1.45}#basic-format-detail .reference-comparison h4{font-size:16px}#basic-format-detail>.help{margin:6px 0}#basic-format-detail .format-review{padding:8px 12px}
 
+
+.revised-result{padding:12px 16px;border-left:4px solid #287b52;background:#f0f8f2}.revised-result p{font-size:15px!important;line-height:1.7!important;white-space:pre-wrap;overflow-wrap:anywhere}

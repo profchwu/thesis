@@ -1,9 +1,9 @@
-import {assessReference} from './reference-assessment.js?v=20260921-original7';
+import {assessReference} from './reference-assessment.js?v=20260921-direct8';
 const norm=s=>String(s||'').normalize('NFKC').toLowerCase().replace(/[^\p{L}\p{N}]/gu,'');
 export function checkReferenceFormat(row,style='APA 7'){
  const a=assessReference(row),c=a.candidate,t=row.text||'',issues=[],parts=[];
  const add=(text,evidence='')=>issues.push({text,evidence});
- const trusted=c&&a.fields.title&&a.fields.doi!==false;
+ const trusted=c&&a.fields.title&&a.fields.doi!==false&&(a.fields.doi===true||a.fields.author);
  const journal=trusted&&c.type==='journal-article';
  const template=style==='IEEE'?'[編號] 名字縮寫 姓氏, “文章題名,” 期刊名, vol. 卷, no. 期, pp. 起–迄頁／Art. no. 文章編號, 年份, doi: DOI.':'姓氏, 名字縮寫. (年份). 文章題名（句首大寫）. 期刊名, 卷(期), 起–迄頁／Article 文章編號. https://doi.org/DOI';
  if(!journal)return {style,status:'待人工確認文獻類型',issues:[{text:'尚無題名相符且明確標示為期刊論文的資料；不能套用期刊格式判定正確。',evidence:''}],parts:[],template,note:'以下是期刊論文格式範本；書籍、學位論文、會議、網頁等須另按文獻類型檢查。未驗證斜體、懸掛縮排或全文引用。'};
