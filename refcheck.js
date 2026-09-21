@@ -1,6 +1,6 @@
-import {getAIContext} from './app.js?v=20260921-gemini3';
-import {referenceStart,referenceRows} from './ai-core.js?v=20260921-gemini3';
-import {reportHTML,exportPDF} from './ai-report.js?v=20260921-gemini3';
+import {getAIContext} from './app.js?v=20260921-models4';
+import {referenceStart,referenceRows} from './ai-core.js?v=20260921-models4';
+import {reportHTML,exportPDF} from './ai-report.js?v=20260921-models4';
 const $=id=>document.getElementById(id);let rows=[],page=0,external=null,sourceDoc=null,loadVersion=0;
 function status(text){$('refcheck-status').textContent=text;}
 function download(blob,name){const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),30000);}

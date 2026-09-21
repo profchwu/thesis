@@ -1,13 +1,13 @@
-import {getBasicReport} from './basic-ui.js?v=20260921-gemini3';
-import {getAIContext,setAILock,applyAIRules} from './app.js?v=20260921-gemini3';
-import {PROVIDERS,LABELS,RULE_LABELS,referenceStart,referenceRows,batches,requestAnalysis,checkGeminiModel} from './ai-core.js?v=20260921-gemini3';
-import {reportHTML,exportPDF} from './ai-report.js?v=20260921-gemini3';
+import {getBasicReport} from './basic-ui.js?v=20260921-models4';
+import {getAIContext,setAILock,applyAIRules} from './app.js?v=20260921-models4';
+import {PROVIDERS,LABELS,RULE_LABELS,referenceStart,referenceRows,batches,requestAnalysis,checkGeminiModel,listGeminiModels} from './ai-core.js?v=20260921-models4';
+import {reportHTML,exportPDF} from './ai-report.js?v=20260921-models4';
 const $=s=>document.querySelector(s),dialog=$('#ai-dialog');let externalReview=null,selectionDoc=null,controller=null,report=null,snapshot=null,viewPage=0,selectedRules=new Set();
 function message(text,error=false){$('#ai-status').textContent=text;$('#ai-status').classList.toggle('error',error);}
 function download(blob,name){const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),30000);}
 function providerInfo(){return PROVIDERS[$('#ai-provider').value];}
-let modelCheck=null;
-function updateProvider(){modelCheck?.abort();$('#gemini-check').hidden=$('#ai-provider').value!=='gemini';$('#gemini-check-status').hidden=true;const selected=providerInfo();$('#ai-key-label').textContent=selected.label+' API Key';$('#ai-disclosure').textContent=`AI 模組會將所需的規範、論文文字及書目傳送至 ${selected.label}。資料庫查證與統計規則檢查請使用「基本檢查」，不需要 AI 金鑰。使用可能產生所選供應商的 API 費用，資料處理依其服務條款。金鑰僅在本次頁面記憶體中使用，不儲存；切換供應商或關閉視窗會清除。請在可信任的電腦與瀏覽器使用。文獻查不到不等於虛假，引用主張需全文確認；統計檢查無法取代原始資料重算。`;}
+let modelCheck=null,modelListTask=null;
+function updateProvider(){resetModelList();modelCheck?.abort();$('#gemini-check').hidden=$('#ai-provider').value!=='gemini';$('#gemini-check-status').hidden=true;const selected=providerInfo();$('#ai-key-label').textContent=selected.label+' API Key';$('#ai-disclosure').textContent=`AI 模組會將所需的規範、論文文字及書目傳送至 ${selected.label}。資料庫查證與統計規則檢查請使用「基本檢查」，不需要 AI 金鑰。使用可能產生所選供應商的 API 費用，資料處理依其服務條款。金鑰僅在本次頁面記憶體中使用，不儲存；切換供應商或關閉視窗會清除。請在可信任的電腦與瀏覽器使用。文獻查不到不等於虛假，引用主張需全文確認；統計檢查無法取代原始資料重算。`;}
 $('#ai-provider').addEventListener('change',()=>{$('#ai-key').value='';$('#ai-consent').checked=false;$('#ai-model').value=providerInfo().model;updateProvider();message('已切換供應商並清除金鑰，請輸入對應金鑰並重新確認資料傳送。');});updateProvider();
 function styles(){return[...document.querySelectorAll('[name=ai-style]:checked')].map(el=>el.value);}
 function tasks(){return[...document.querySelectorAll('[name=ai-task]:checked')].map(el=>el.value);}
@@ -64,3 +64,16 @@ $('#ai-model').addEventListener('input',()=>{$('#gemini-check-status').hidden=tr
 $('#ai-clear-key').addEventListener('click',()=>{modelCheck?.abort();$('#gemini-check-status').hidden=true;});
 dialog.addEventListener('cancel',()=>modelCheck?.abort());
 window.addEventListener('pagehide',()=>modelCheck?.abort());
+
+function resetModelList(){modelListTask?.abort();$('#gemini-model-tools').hidden=$('#ai-provider').value!=='gemini';$('#gemini-model-list').replaceChildren(new Option('請先輸入金鑰，再載入清單',''));$('#gemini-model-list').disabled=true;$('#gemini-model-status').textContent='清單由 Google 即時回傳，不保證生成額度、存取權限或結構化輸出支援；不傳送論文。';}
+$('#gemini-load-models').addEventListener('click',async()=>{
+ if(modelListTask)return;const task=new AbortController();modelListTask=task;$('#gemini-load-models').disabled=true;$('#gemini-model-list').disabled=true;$('#gemini-model-list').replaceChildren(new Option('正在載入完整清單…',''));$('#gemini-model-status').textContent='正在取得所有分頁的模型名稱…';
+ try{const rows=await listGeminiModels({key:$('#ai-key').value.trim(),signal:task.signal});if(task.signal.aborted)return;const list=$('#gemini-model-list');list.replaceChildren(new Option('請選擇模型（不會自動更換目前模型）',''));let count=0;for(const row of rows){const supported=row.methods.includes('generateContent');const option=new Option(row.id+' · '+row.label+(supported?'':'（不支援本系統生成方法）'),row.id);option.disabled=!supported;list.add(option);if(supported)count++;}list.disabled=!count;$('#gemini-model-status').textContent=`已載入 ${rows.length} 個模型，其中 ${count} 個支援 generateContent。清單不保證文字／結構化輸出相容性與額度；請選一般文字模型，避免 image、tts、audio 等專用模型。`;}
+ catch(err){if(!task.signal.aborted){$('#gemini-model-list').replaceChildren(new Option('載入失敗，請重試',''));$('#gemini-model-status').textContent=err.message;}}
+ finally{modelListTask=null;$('#gemini-load-models').disabled=false;}
+});
+$('#gemini-model-list').addEventListener('change',()=>{if($('#gemini-model-list').value){$('#ai-model').value=$('#gemini-model-list').value;$('#ai-model').dispatchEvent(new Event('input'));}});
+for(const id of ['#ai-key','#ai-clear-key','#ai-close'])$(id).addEventListener(id==='#ai-key'?'input':'click',resetModelList);
+dialog.addEventListener('cancel',resetModelList);
+$('#ai-enabled').addEventListener('change',()=>{if(!$('#ai-enabled').checked)resetModelList();});
+window.addEventListener('pagehide',resetModelList);

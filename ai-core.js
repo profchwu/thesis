@@ -72,3 +72,15 @@ export async function checkGeminiModel({key,model,signal}){
  try{const res=await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+encodeURIComponent(model),{headers:{'x-goog-api-key':key},signal:controller.signal});if(!res.ok)throw await apiFailure(res);const data=await res.json();if(!data.supportedGenerationMethods?.includes('generateContent'))throw Error('此模型不支援本系統使用的文字生成方法，請更換模型。');return '金鑰可讀取此模型，且支援 generateContent。尚未測試生成額度或結構化輸出；開始分析前仍須勾選資料傳送同意。';}
  catch(err){if(controller.signal.aborted)throw Error('模型檢查已取消或逾時。');if(err instanceof TypeError)throw Error('無法連線 Gemini，請檢查網路或瀏覽器連線限制。');throw err;}finally{clearTimeout(timer);signal?.removeEventListener('abort',abort);}
 }
+
+export async function listGeminiModels({key,signal}){
+ if(!key||/\s/.test(key))throw Error('請先輸入 Gemini API Key。');
+ const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),60000),abort=()=>controller.abort();signal?.addEventListener('abort',abort,{once:true});if(signal?.aborted)abort();
+ try{const models=new Map(),seen=new Set();let token='';do{
+ const url=new URL('https://generativelanguage.googleapis.com/v1beta/models');url.searchParams.set('pageSize','1000');if(token)url.searchParams.set('pageToken',token);
+ const res=await fetch(url,{headers:{'x-goog-api-key':key},signal:controller.signal});if(!res.ok)throw await apiFailure(res);const data=await res.json();if(data.models!==undefined&&!Array.isArray(data.models))throw Error('Google 回傳的模型清單格式不正確。');
+ for(const m of data.models||[]){if(typeof m.name!=='string'||!/^models\/[a-zA-Z0-9._:-]+$/.test(m.name))continue;const id=m.name.slice(7);models.set(id,{id,label:String(m.displayName||id),methods:Array.isArray(m.supportedGenerationMethods)?m.supportedGenerationMethods:[]});}
+ token=data.nextPageToken||'';if(typeof token!=='string'||token&&seen.has(token))throw Error('模型清單分頁異常，請重新載入。');seen.add(token);
+ }while(token);return [...models.values()].sort((a,b)=>a.id.localeCompare(b.id));
+ }catch(err){if(controller.signal.aborted)throw Error('模型清單載入已取消或逾時，未顯示不完整清單。');if(err instanceof TypeError)throw Error('無法連線 Gemini，請檢查網路或瀏覽器限制。');throw err;}finally{clearTimeout(timer);signal?.removeEventListener('abort',abort);}
+}

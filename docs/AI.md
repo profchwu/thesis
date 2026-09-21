@@ -69,3 +69,6 @@ OK 必須有候選的完整題名、第一作者姓名片段、年份及（原�
 ## Gemini 連線診斷
 保留官方模型 ID gemini-2.5-flash，新增 models.get 唯讀檢查，不傳送論文、不測試付費生成。成功僅表示可讀取模型且支援 generateContent，不能保證生成額度、結構化輸出或內容審查通過。HTTP 錯誤依安全分類提示，不回顯可能含金鑰／原稿的服務訊息。分析失敗原因保留於報告狀態，切換供應商仍可辨識先前錯誤。tests/gemini-check.cjs 及既有 provider/smoke 測試通過；沒有實際使用者金鑰，不宣稱已復現其帳戶問題。
 官方依據：https://ai.google.dev/api/models 、 https://ai.google.dev/gemini-api/docs/deprecations 、 https://ai.google.dev/gemini-api/docs/troubleshooting 。
+
+## Gemini 完整模型清單
+新增 models.list 即時載入，跟隨 nextPageToken 取得全部分頁，依模型 ID 去重排序。下拉式選单顯示所有模型，不支援 generateContent 者禁用；生成方法支援不等於文字、JSON、額度或實際存取已驗證。失敗不保留部分清單，金鑰／供應商切換或關閉會清除；不傳送論文、不將金鑰放網址。tests/gemini-models.cjs 驗證分頁、選取、非生成模型禁用、第二頁失敗與金鑰切換。官方依據：https://ai.google.dev/api/models#method:-models.list 。
