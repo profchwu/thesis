@@ -1,8 +1,8 @@
-import {getAIContext,setAILock} from './app.js?v=20260921-basic2';
-import {DATABASES,verifySources,saveManualCheck} from './sources.js?v=20260921-basic2';
-import {referenceStart,referenceRows,checkStatistics} from './ai-core.js?v=20260921-basic2';
-import {assessReference} from './reference-assessment.js?v=20260921-basic2';
-import {reportHTML,exportPDF,escapeHTML as e} from './ai-report.js?v=20260921-basic2';
+import {getAIContext,setAILock} from './app.js?v=20260921-gemini3';
+import {DATABASES,verifySources,saveManualCheck} from './sources.js?v=20260921-gemini3';
+import {referenceStart,referenceRows,checkStatistics} from './ai-core.js?v=20260921-gemini3';
+import {assessReference} from './reference-assessment.js?v=20260921-gemini3';
+import {reportHTML,exportPDF,escapeHTML as e} from './ai-report.js?v=20260921-gemini3';
 const $=s=>document.querySelector(s),dialog=$('#basic-dialog');let report=null,controller=null,page=0,statPage=0,selectionDoc=null;
 export function getBasicReport(){return report;}
 function message(t,error=false){$('#basic-status').textContent=t;$('#basic-status').classList.toggle('error',error);}

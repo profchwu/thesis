@@ -1,6 +1,6 @@
-import {assessReference} from './reference-assessment.js?v=20260921-basic2';
-import {AUTHOR,DISCLAIMER} from './notice.js?v=20260921-basic2';
-import {LABELS,RULE_LABELS} from './ai-core.js?v=20260921-basic2';
+import {assessReference} from './reference-assessment.js?v=20260921-gemini3';
+import {AUTHOR,DISCLAIMER} from './notice.js?v=20260921-gemini3';
+import {LABELS,RULE_LABELS} from './ai-core.js?v=20260921-gemini3';
 export const escapeHTML=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const e=escapeHTML;
 const severity={problem:'需人工修正／核對',review:'待查證',info:'資訊'};

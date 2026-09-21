@@ -65,3 +65,7 @@ tests/refcheck.cjs 已驗證：只匯出書目、不含正文、匯入安全逸�
 OK 必須有候選的完整題名、第一作者姓名片段、年份及（原文有提供時）DOI 相符，僅作基本書目一致性判定。DOI 指向不符題名／年份或撤稿標記時列有疑點；候選未完整吻合為待核對；所有來源查無才列查無紀錄，失敗／取消保留未完成。人工登錄不等同自動確認。不能驗證全文支持或作者群完整性。
 
 報告改為逐篇結論索引、文獻依據、其他問題、必要摘要與範圍責任，移除重複的空白人工來源與重複問題索引。PDF 保留所有原始書目與實際來源狀態。tests/basic.cjs 覆蓋不使用 AI、正確／DOI 題名衝突／年份衝突／作者不符／未找到／查詢失敗／人工確認、篩選、統計本機運算、HTML／PDF 及原稿不變；既有 AI、RefCheck 和 Word 回歸保持。
+
+## Gemini 連線診斷
+保留官方模型 ID gemini-2.5-flash，新增 models.get 唯讀檢查，不傳送論文、不測試付費生成。成功僅表示可讀取模型且支援 generateContent，不能保證生成額度、結構化輸出或內容審查通過。HTTP 錯誤依安全分類提示，不回顯可能含金鑰／原稿的服務訊息。分析失敗原因保留於報告狀態，切換供應商仍可辨識先前錯誤。tests/gemini-check.cjs 及既有 provider/smoke 測試通過；沒有實際使用者金鑰，不宣稱已復現其帳戶問題。
+官方依據：https://ai.google.dev/api/models 、 https://ai.google.dev/gemini-api/docs/deprecations 、 https://ai.google.dev/gemini-api/docs/troubleshooting 。

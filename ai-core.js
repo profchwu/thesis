@@ -23,7 +23,7 @@ export async function requestAnalysis({provider='openai',key,model,payload,signa
       else{url='https://api.openai.com/v1/responses';body={model,store:false,max_output_tokens:10000,instructions:REVIEW_INSTRUCTIONS,input,text:{format:{type:'json_schema',name:'thesis_review',strict:true,schema:ANALYSIS_SCHEMA}}};}
     }
     const res=await fetch(url,{method:'POST',headers,signal:controller.signal,body:JSON.stringify(body)});
-    if(!res.ok){const messages={401:'API Key 無效或已失效。',403:'此金鑰沒有使用權限，請確認 API、模型與金鑰限制。',429:'API 額度不足或請求過於頻繁，請稍後再試。',400:'金鑰、模型或請求設定不受支援，請確認所選供應商與模型支援結構化輸出。',404:'找不到模型，請確認模型名稱及帳戶可用模型。'};throw Error(label+'：'+(messages[res.status]||`服務暫時無法完成請求（HTTP ${res.status}）。`));}
+    if(!res.ok)throw await apiFailure(res,label);
     const data=await res.json();let text='',usage={};
     if(provider==='gemini'){const candidate=data.candidates?.[0];if(data.promptFeedback?.blockReason||candidate?.finishReason!=='STOP')throw Error('Gemini 未完成輸出，可能達到長度上限或受到內容限制；本批次未列為完成。');text=(candidate.content?.parts||[]).filter(p=>!p.thought&&typeof p.text==='string').map(p=>p.text).join('');usage={input_tokens:data.usageMetadata?.promptTokenCount||0,output_tokens:(data.usageMetadata?.candidatesTokenCount||0)+(data.usageMetadata?.thoughtsTokenCount||0)};}
     else if(provider==='grok'){const choice=data.choices?.[0];if(choice?.finish_reason!=='stop'||choice.message?.refusal)throw Error('Grok 未完成輸出，可能達到長度上限或拒絕回應；本批次未列為完成。');text=choice.message?.content||'';usage={input_tokens:data.usage?.prompt_tokens||0,output_tokens:data.usage?.completion_tokens||0};}
@@ -50,4 +50,25 @@ export function checkStatistics(paragraphs){const findings=[];let recomputed=0;c
     const re=/(?<![A-Za-z])(t|F|χ2|chi2)\s*\(\s*(\d+(?:\.\d+)?)\s*(?:,\s*(\d+(?:\.\d+)?))?\s*\)\s*=\s*(-?\d+(?:\.\d+)?)\s*[,;，；]?\s*p\s*([=<>≤≥])\s*(\d*\.?\d+)/gi;
     for(const m of text.matchAll(re)){const kind=m[1].toLowerCase(),df=+m[2],df2=+m[3],stat=+m[4],reported=+m[6];if(df<=0||reported<0||reported>1||(kind==='f'&&!(df2>0))||(kind!=='t'&&stat<0))continue;let expected;try{expected=kind==='t'?2*(1-jStat.studentt.cdf(Math.abs(stat),df)):kind==='f'?1-jStat.centralF.cdf(stat,df,df2):1-jStat.chisquare.cdf(stat,df);}catch{continue;}if(!Number.isFinite(expected))continue;recomputed++;const tolerance=Math.max(.001,Math.pow(10,-(m[6].split('.')[1]?.length||0))*.5);const mismatch=m[5]==='='?Math.abs(expected-reported)>tolerance:m[5]==='<'||m[5]==='≤'?expected>reported+tolerance:expected<reported-tolerance;add(p,m[0],`${kind==='t'?'假設雙尾 t 檢定；':'採上尾機率；'}由已報告數值計算 p ≈ ${expected.toPrecision(5)}。${mismatch?'與所報 p 值可能不一致。':'在顯示精度容許範圍內一致。'}`,'需考量統計量的四捨五入、單／雙尾設定與校正方法；這不是原始資料重算。',mismatch?'review':'info');}
   }return{findings,recomputed};
+}
+
+// Never echo provider messages: they may include keys or submitted document text.
+export async function apiFailure(response,label='Google Gemini'){
+ let data={};try{data=await response.json();}catch{}
+ const details=Array.isArray(data.error?.details)?data.error.details:[];
+ const reasons=details.map(x=>x.reason),raw=String(data.error?.message||'');
+ let hint=({400:'金鑰、模型或請求設定不受支援。',401:'金鑰無效或已失效。',403:'沒有使用權限，請確認專案、API 與金鑰限制。',404:'此金鑰無法存取這個模型；請核對模型名稱與專案可用模型。',429:'額度不足或請求過於頻繁；請至 AI Studio 檢查額度與計費。',503:'服務暫時忙碌，請稍後重試。'})[response.status]||'服務暫時無法完成請求。';
+ if(reasons.includes('API_KEY_INVALID')||/API key not valid/i.test(raw))hint='API Key 無效，請使用 Google AI Studio 建立的 Gemini API 金鑰。';
+ else if(reasons.some(x=>['API_KEY_HTTP_REFERRER_BLOCKED','API_KEY_SERVICE_BLOCKED','SERVICE_DISABLED'].includes(x)))hint='金鑰的網站／API 限制阻擋請求，或專案尚未啟用 Gemini API。請在 Google Cloud 檢查，網站來源為 https://profchwu.github.io/*。';
+ else if(/leaked/i.test(raw))hint='Google 已將此金鑰標記為外洩並封鎖，請在 AI Studio 撤銷並建立新金鑰。';
+ else if(response.status===400&&/responseJsonSchema|response_schema|generation_config|generationConfig/i.test(raw))hint='模型拒絕結構化輸出設定，請確認模型支援或回報此 HTTP 400 錯誤。';
+ else if(/location.*not supported|not available in your country/i.test(raw))hint='此網路所在地尚未支援 Gemini API，請核對官方可用地區。';
+ return Error(`${label}（HTTP ${response.status}）：${hint}`);
+}
+export async function checkGeminiModel({key,model,signal}){
+ if(!key||/\s/.test(key))throw Error('請輸入 Gemini API Key。');
+ if(!/^[a-zA-Z0-9._:-]+$/.test(model))throw Error('模型名稱格式不正確，請填入不含 models/ 的模型 ID。');
+ const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),20000),abort=()=>controller.abort();signal?.addEventListener('abort',abort,{once:true});if(signal?.aborted)abort();
+ try{const res=await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+encodeURIComponent(model),{headers:{'x-goog-api-key':key},signal:controller.signal});if(!res.ok)throw await apiFailure(res);const data=await res.json();if(!data.supportedGenerationMethods?.includes('generateContent'))throw Error('此模型不支援本系統使用的文字生成方法，請更換模型。');return '金鑰可讀取此模型，且支援 generateContent。尚未測試生成額度或結構化輸出；開始分析前仍須勾選資料傳送同意。';}
+ catch(err){if(controller.signal.aborted)throw Error('模型檢查已取消或逾時。');if(err instanceof TypeError)throw Error('無法連線 Gemini，請檢查網路或瀏覽器連線限制。');throw err;}finally{clearTimeout(timer);signal?.removeEventListener('abort',abort);}
 }
