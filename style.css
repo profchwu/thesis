@@ -24,3 +24,8 @@
 
 #basic-dialog [data-basic-panel=results]{padding:8px 12px}#basic-dialog .basic-summary{margin:7px 0}#basic-results .basic-reference{padding:8px 12px;margin:7px 0}#basic-results .basic-reference p{margin:4px 0;line-height:1.4}#basic-dialog .check-pager{padding:6px 0;margin:5px 0}#basic-format-detail .format-review{font-size:13px;line-height:1.5}#basic-format-detail .format-review p{margin:9px 0}
 
+
+#basic-results .reference-comparison{gap:6px;margin:7px 0}#basic-results .reference-comparison>section{padding:8px 12px}#basic-results .reference-comparison p{font-size:13px;line-height:1.45}#basic-results .reference-evidence{font-size:12px}#basic-results .reference-comparison h4{font-size:16px}
+
+#basic-results .reference-comparison{display:grid;grid-template-columns:1fr}#basic-results .reference-comparison>section{padding:6px 10px}#basic-format-detail .reference-comparison{margin:6px 0;gap:6px}#basic-format-detail .reference-comparison>section{padding:8px 12px}#basic-format-detail .reference-comparison p{font-size:13px;line-height:1.45}#basic-format-detail .reference-comparison h4{font-size:16px}#basic-format-detail>.help{margin:6px 0}#basic-format-detail .format-review{padding:8px 12px}
+

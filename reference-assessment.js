@@ -1,4 +1,4 @@
-import {doiFrom} from './ai-core.js?v=20260921-workspace6';
+import {doiFrom} from './ai-core.js?v=20260921-original7';
 const norm=s=>String(s||'').normalize('NFKC').toLowerCase().replace(/[^\p{L}\p{N}]/gu,'');
 const doi=s=>String(s||'').replace(/^https?:\/\/(?:dx\.)?doi.org\//i,'').toLowerCase();
 export function assessReference(row){

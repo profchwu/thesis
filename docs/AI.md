@@ -86,3 +86,8 @@ OK 必須有候選的完整題名、第一作者姓名片段、年份及（原�
 報告按內容分區，文獻與問題單項選擇，左右原文／建議對照；輸出 HTML 所有資料仍逸出，互動程式為固定程式，PDF 收集全部 report-block，不受網頁分區／單筆隱藏狀態影響。保留 readonly 原稿邊界；數值建議僅是人工查核動作。
 
 model-memory.cjs 驗證重新載入持續記憶、金鑰分離、404 排除、429 保留、無明文金鑰；basic.cjs 驗證首頁入口、sandbox 分區與逐筆導覽、比較顯示及 PDF；既有 AI／供應商／RefCheck／Word 保留回歸測試。
+
+
+## Original／Revised 完整書目對照
+
+逐篇結果改為每頁一篇，直接顯示完整 Original 與 Revised；格式詳情、分區網頁、HTML 與 PDF 使用相同的 reference-comparison.js。以有界 token LCS 比較，原文刪除／調整片段與建議新增／調整片段呈現紅色粗體底線，未知佔位欄位一律標紅；保留文字不整段染紅。不產生 Word 寫入，未知書目不假造 Revised。超長 PDF 書目分段延續而不裁切。reference-comparison.cjs 驗證全文保留、差異標記、佔位字、未變動、HTML 逸出與分段。
