@@ -1,0 +1,5 @@
+const PREFIX='thesis-models-v1:';
+export async function modelAccount(provider,key){if(!key)return '';const bytes=await crypto.subtle.digest('SHA-256',new TextEncoder().encode('thesis-model-memory-v1|'+provider+'|'+key));return PREFIX+Array.from(new Uint8Array(bytes),x=>x.toString(16).padStart(2,'0')).join('');}
+export function readModels(account){try{const data=JSON.parse(localStorage.getItem(account)||'{}');return data&&typeof data==='object'&&!Array.isArray(data)?data:{};}catch{return {};}}
+export function saveModel(account,model,status){if(!account||!['verified','listed','unavailable'].includes(status)||!/^[\w.:-]+$/.test(model))return;const data=readModels(account);if(status==='listed'&&data[model]?.status==='verified')return;data[model]={status,checkedAt:new Date().toISOString()};try{localStorage.setItem(account,JSON.stringify(data));}catch{}document.dispatchEvent(new CustomEvent('model-memory-updated',{detail:{account}}));}
+export function clearModels(account){try{localStorage.removeItem(account);}catch{}}

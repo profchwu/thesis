@@ -1,3 +1,4 @@
+import {modelAccount,saveModel} from './model-memory.js?v=20260921-workspace6';
 const str={type:'string'},num={type:'integer'};
 const obj=properties=>({type:'object',properties,required:Object.keys(properties),additionalProperties:false});
 const arr=items=>({type:'array',items});
@@ -12,6 +13,7 @@ const REVIEW_INSTRUCTIONS="You are a careful academic manuscript reviewer. Respo
 export async function requestAnalysis({provider='openai',key,model,payload,signal}){
   if(!Object.hasOwn(PROVIDERS,provider))throw Error('不支援的 AI 供應商。');
   if(!/^[a-zA-Z0-9._:-]+$/.test(model))throw Error('模型名稱格式不正確。');
+  const account=await modelAccount(provider,key);
   const label=PROVIDERS[provider].label,controller=new AbortController(),timer=setTimeout(()=>controller.abort('timeout'),180000);
   const abort=()=>controller.abort(signal.reason);signal?.addEventListener('abort',abort,{once:true});if(signal?.aborted)abort();
   try{let url,body,headers={'Content-Type':'application/json'};const input=JSON.stringify(payload);
@@ -32,8 +34,8 @@ export async function requestAnalysis({provider='openai',key,model,payload,signa
   if(!parsed||typeof parsed.summary!=='string'||!['findings','rules'].every(k=>Array.isArray(parsed[k])))throw Error('AI 回傳資料不完整，未套用任何修改。');
   parsed.findings=parsed.findings.filter(f=>f&&LABELS[f.category]&&['problem','review','info'].includes(f.severity)&&['location','evidence','explanation','suggestion'].every(k=>typeof f[k]==='string'));
   parsed.rules=parsed.rules.filter(r=>r&&typeof r.key==='string'&&typeof r.value==='string'&&typeof r.evidence==='string');
-  return{summary:parsed.summary,findings:parsed.findings,rules:parsed.rules,usage};
-  }catch(e){if(signal?.aborted)throw new DOMException('分析已取消','AbortError');if(controller.signal.aborted)throw Error('AI 請求逾時，本批次未完成。');if(e instanceof TypeError)throw Error(`無法連線 ${label}，請確認網路、服務狀態及瀏覽器跨來源連線限制。`);throw e;}finally{clearTimeout(timer);signal?.removeEventListener('abort',abort);}
+  saveModel(account,model,'verified');return{summary:parsed.summary,findings:parsed.findings,rules:parsed.rules,usage};
+  }catch(e){if(e.modelUnavailable)saveModel(account,model,'unavailable');if(signal?.aborted)throw new DOMException('分析已取消','AbortError');if(controller.signal.aborted)throw Error('AI 請求逾時，本批次未完成。');if(e instanceof TypeError)throw Error(`無法連線 ${label}，請確認網路、服務狀態及瀏覽器跨來源連線限制。`);throw e;}finally{clearTimeout(timer);signal?.removeEventListener('abort',abort);}
 }
 const clean=s=>String(s||'').replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim();
 export function doiFrom(text){return text.match(/10\.\d{4,9}\/[^\s<>"\u3000]+/i)?.[0].replace(/[.,;。；]+$/,'').replace(/\)$/,x=>(text.match(/\(/g)||[]).length<(text.match(/\)/g)||[]).length?'':x)||'';}
@@ -41,7 +43,7 @@ async function registry(url,signal){const controller=new AbortController(),t=set
 export async function verifyReference(row,signal){const doi=doiFrom(row.text);const source=doi?'https://api.crossref.org/works/'+encodeURIComponent(doi):'https://api.crossref.org/works?rows=3&query.bibliographic='+encodeURIComponent(row.text.slice(0,1200));
   try{const data=await registry(source,signal),matches=doi?(data?[data.message]:[]):data?.message?.items||[];const candidates=matches.map(m=>({type:m.type||'',articleNumber:m['article-number']||'',authorDetails:(m.author||[]).map(a=>({given:clean(a.given),family:clean(a.family)})),doi:m.DOI||'',title:clean(m.title?.[0]),authors:(m.author||[]).map(a=>clean([a.given,a.family].filter(Boolean).join(' '))),year:m.issued?.['date-parts']?.[0]?.[0]??null,journal:clean(m['container-title']?.[0]),volume:m.volume||'',issue:m.issue||'',pages:m.page||'',abstract:clean(m.abstract).slice(0,7000),updates:m['update-to']||[],url:m.DOI?'https://doi.org/'+encodeURIComponent(m.DOI):''}));
   return{...row,query:doi||row.text,method:doi?'DOI 精確查詢':'書目文字搜尋',status:candidates.length?(doi?'DOI 登錄存在，需核對題名與作者':'找到候選文獻，尚未確認匹配'):'未找到 Crossref 紀錄；不能據此認定虛假',candidates,source,checkedAt:new Date().toISOString()};
-  }catch(e){if(signal?.aborted)throw new DOMException('分析已取消','AbortError');return{...row,method:doi?'DOI 精確查詢':'書目文字搜尋',status:'查詢失敗／逾時，未完成查證',candidates:[],source,checkedAt:new Date().toISOString()};}
+  }catch(e){if(e.modelUnavailable)saveModel(account,model,'unavailable');if(signal?.aborted)throw new DOMException('分析已取消','AbortError');return{...row,method:doi?'DOI 精確查詢':'書目文字搜尋',status:'查詢失敗／逾時，未完成查證',candidates:[],source,checkedAt:new Date().toISOString()};}
 }
 export function checkStatistics(paragraphs){const findings=[];let recomputed=0;const add=(p,evidence,explanation,suggestion,severity='review')=>findings.push({category:'statistics',severity,location:`第 ${p.index+1} 段`,evidence,explanation,suggestion,origin:'規則／數值計算'});
   for(const p of paragraphs){const text=p.text.normalize('NFKC');for(const m of text.matchAll(/\bp\s*([=<>≤≥])\s*(-?\d*\.?\d+(?:e[-+]?\d+)?)/gi)){const value=Number(m[2]);if(value<0||value>1)add(p,m[0],'p 值不在 0 到 1 的有效範圍。','核對原始分析輸出與小數點。','problem');else if(value===0&&m[1]==='=')add(p,m[0],'p=0 通常是四捨五入造成，不宜當作精確零值報告。','核對原始統計輸出及報告精度；本系統不提供替換數值，也不修改論文。');}
@@ -63,14 +65,15 @@ export async function apiFailure(response,label='Google Gemini'){
  else if(/leaked/i.test(raw))hint='Google 已將此金鑰標記為外洩並封鎖，請在 AI Studio 撤銷並建立新金鑰。';
  else if(response.status===400&&/responseJsonSchema|response_schema|generation_config|generationConfig/i.test(raw))hint='模型拒絕結構化輸出設定，請確認模型支援或回報此 HTTP 400 錯誤。';
  else if(/location.*not supported|not available in your country/i.test(raw))hint='此網路所在地尚未支援 Gemini API，請核對官方可用地區。';
- return Error(`${label}（HTTP ${response.status}）：${hint}`);
+ const error=Error(`${label}（HTTP ${response.status}）：${hint}`);error.modelUnavailable=response.status===404||(response.status===403&&/model/i.test(raw)&&!/API_KEY|SERVICE_DISABLED/.test(reasons.join(' ')))||(response.status===400&&/responseJsonSchema|response_schema|not supported.*model|model.*not supported/i.test(raw));return error;
 }
 export async function checkGeminiModel({key,model,signal}){
  if(!key||/\s/.test(key))throw Error('請輸入 Gemini API Key。');
  if(!/^[a-zA-Z0-9._:-]+$/.test(model))throw Error('模型名稱格式不正確，請填入不含 models/ 的模型 ID。');
+ const account=await modelAccount('gemini',key);
  const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),20000),abort=()=>controller.abort();signal?.addEventListener('abort',abort,{once:true});if(signal?.aborted)abort();
- try{const res=await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+encodeURIComponent(model),{headers:{'x-goog-api-key':key},signal:controller.signal});if(!res.ok)throw await apiFailure(res);const data=await res.json();if(!data.supportedGenerationMethods?.includes('generateContent'))throw Error('此模型不支援本系統使用的文字生成方法，請更換模型。');return '金鑰可讀取此模型，且支援 generateContent。尚未測試生成額度或結構化輸出；開始分析前仍須勾選資料傳送同意。';}
- catch(err){if(controller.signal.aborted)throw Error('模型檢查已取消或逾時。');if(err instanceof TypeError)throw Error('無法連線 Gemini，請檢查網路或瀏覽器連線限制。');throw err;}finally{clearTimeout(timer);signal?.removeEventListener('abort',abort);}
+ try{const res=await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+encodeURIComponent(model),{headers:{'x-goog-api-key':key},signal:controller.signal});if(!res.ok)throw await apiFailure(res);const data=await res.json();if(!data.supportedGenerationMethods?.includes('generateContent')){const error=Error('此模型不支援本系統使用的文字生成方法，請更換模型。');error.modelUnavailable=true;throw error;}saveModel(account,model,'listed');return '金鑰可讀取此模型，且支援 generateContent。尚未測試生成額度或結構化輸出；開始分析前仍須勾選資料傳送同意。';}
+ catch(err){if(err.modelUnavailable)saveModel(account,model,'unavailable');if(controller.signal.aborted)throw Error('模型檢查已取消或逾時。');if(err instanceof TypeError)throw Error('無法連線 Gemini，請檢查網路或瀏覽器連線限制。');throw err;}finally{clearTimeout(timer);signal?.removeEventListener('abort',abort);}
 }
 
 export async function listGeminiModels({key,signal}){

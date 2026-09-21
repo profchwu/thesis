@@ -1,4 +1,4 @@
-import {assessReference} from './reference-assessment.js?v=20260921-format5';
+import {assessReference} from './reference-assessment.js?v=20260921-workspace6';
 const norm=s=>String(s||'').normalize('NFKC').toLowerCase().replace(/[^\p{L}\p{N}]/gu,'');
 export function checkReferenceFormat(row,style='APA 7'){
  const a=assessReference(row),c=a.candidate,t=row.text||'',issues=[],parts=[];
@@ -34,3 +34,10 @@ export function checkReferenceFormat(row,style='APA 7'){
  return {style,status:issues.length?'格式有缺漏／疑點':'已檢查的格式規則未發現問題',issues,parts,template,note:'這是依資料庫整理的欄位建議，並非已認證的完整引用字串。請核對所有作者與標點、英文題名句首大寫／專有名詞、正式出版年份、期刊與卷號斜體及懸掛縮排；純文字檢查不能確認 Word 的斜體與縮排。期號與頁碼僅在出版紀錄提供時使用。'};
 }
 export function formatHTML(result,escape){const e=escape;return `<div class="format-review"><strong class="${result.issues.length?'format-error':''}">${e(result.style+'｜'+result.status)}</strong><ul>${result.issues.map(x=>`<li class="format-error">${e(x.text)}${x.evidence?'〔'+e(x.evidence)+'〕':''}</li>`).join('')}</ul><p><b>正確格式範本：</b>${e(result.template)}</p>${result.parts.length?'<p><b>本篇欄位建議（須人工核對）：</b></p>'+result.parts.map(p=>`<span class="format-field ${p.bad?'format-error':''}">${e(p.label)}：${p.italic?'<em>':''}${e(p.text)}${p.italic?'</em>':''}</span>`).join(' · '):''}<p class="help">${e(result.note)}</p></div>`;}
+
+export function referenceSuggestion(row,result){
+ if(!result.parts.length)return '尚無足夠來源資料，不能提供此篇的完整建議。請依文獻類型核對；不補造作者、題名或出版資訊。\n期刊格式範本：'+result.template;
+ const fields=Object.fromEntries(result.parts.map(p=>[p.label,p.text]));
+ if(result.style==='IEEE'){const c=assessReference(row).candidate;return `[編號待對照文內引用] ${fields['作者']}, “${String(c.title||'【題名待核對】').replace(/\.$/,'')},” ${c.journal||'【期刊待核對】'}, vol. ${c.volume||'【卷待核對】'}${c.issue?', no. '+c.issue:''}, ${c.articleNumber?'Art. no. '+c.articleNumber:c.pages?'pp. '+c.pages:'【頁碼／文章編號待核對】'}, ${c.year||'【年份待核對】'}${c.doi?', doi: '+c.doi:''}.`;}
+ return `${fields['作者']} ${fields['年份']} ${fields['題名']} ${fields['期刊與卷']}${fields['期']||''}, ${fields['文章編號']||fields['頁碼']||fields['頁碼／文章編號']}. ${fields['DOI']||''}`;
+}
