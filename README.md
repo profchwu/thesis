@@ -15,8 +15,8 @@
 ## 資料與功能範圍
 
 - 一般排版不需要 API Key，採用文字規則擷取及 Word 文件格式處理。
-- 可選用 AI 進階分析：需自行輸入 OpenAI API Key，預設模型為 `gpt-4.1-mini`，可改用支援 Responses 結構化輸出的模型。
-- 一般排版在瀏覽器記憶體內處理，不上傳論文。AI 啟用並同意傳送後，所選模組需要的規範、論文文字、書目及查詢結果會送到 OpenAI；DOI 或書目文字會送到 Crossref。API 使用可能產生費用。
+- 可選用 AI 進階分析：支援 OpenAI、Google Gemini、xAI Grok；選擇供應商後輸入對應 API Key，模型可自行調整。
+- 一般排版在瀏覽器記憶體內處理，不上傳論文。AI 啟用並同意傳送後，所選模組需要的規範、論文文字、書目及查詢結果會送到所選 AI 供應商；DOI 或書目文字會送到 Crossref。API 使用可能產生費用。
 - 金鑰只供本次分析使用，不寫入 GitHub、localStorage、sessionStorage 或報告；開始分析後清空輸入框、結束後釋放金鑰變數。瀏覽器 BYOK 仍需信任網站程式與瀏覽器環境；請勿放入開發者共用金鑰。
 - 規範原文存於目前網站的瀏覽器儲存空間，不跨裝置或網址同步；清除網站資料會移除。
 - 支援紙張、邊界、字型、字級、行距、黑色文字及頁尾置中設定。
@@ -26,7 +26,7 @@
 
 ## AI 進階分析
 
-1. 匯入論文與規範後，點右上角「AI 進階分析」，勾選啟用並輸入自己的金鑰。
+1. 匯入論文與規範後，點右上角「AI 進階分析」，勾選啟用並選擇供應商並輸入自己的金鑰。切換供應商會清空金鑰及資料傳送同意。
 2. 選擇格式規範、参考文獻格式、引用查證、統計檢查等模組。
 3. 可複選 APA 7、Harvard（Cite Them Right）、IEEE、MLA 9、Chicago author-date；Word 修訂只使用一種目標格式。
 4. 確認參考文獻標題段落，閱讀資料傳送與費用说明，再開始分析。
@@ -58,3 +58,17 @@ GitHub Pages 設定：`main` 分支、`/ (root)` 目錄。推送更新後由 Git
 ## 免責聲明
 
 本網站僅供研究與教學使用。網站提供的格式整理、AI 分析、文獻查證、統計檢查及報告，均為輔助資訊，不保證其正確性、完整性、即時性或符合各校最新規範。使用者應自行核對原始文獻、研究資料、統計結果、引用內容及學校正式規定，並對最終提交或使用的內容負責。AI 或外部資料庫可能產生錯誤、遺漏或無法查證的結果；查無文獻不等於虛假，查得書目也不代表引用主張正確。本網站及其報告不代表學校官方審查、認證或學術不端判定。使用者應保留原始檔案，確認有權上傳或傳送相關資料，並自行承擔使用本網站及其輸出結果的風險；啟用 AI 所產生的 API 費用由使用者自行負擔。
+
+## AI 供應商
+
+| 供應商 | 預設模型 | 使用介面 |
+| --- | --- | --- |
+| OpenAI | `gpt-4.1-mini` | Responses |
+| Google Gemini | `gemini-2.5-flash` | Gemini Developer API generateContent |
+| xAI Grok | `grok-4.6` | Chat Completions |
+
+模型需支援結構化 JSON 輸出且帳戶有使用權限。Gemini 使用 Google AI Studio 的 Gemini API Key；Grok 使用 xAI API Key（不是 Groq）。金鑰只傳送至所選供應商的固定官方端點，Gemini 金鑰放在請求標頭，不放在網址；不會自動改送其他供應商。供應商費用及資料處理條款各自適用。
+
+Gemini／Grok 已用模擬 API 驗證完整操作、請求格式、回應解析、錯誤處理與報告，尚未以付費金鑰驗證實際模型輸出。測試指令：`node tests/ai-providers.cjs`（沿用上述測試環境）。
+
+官方介面依據：[Gemini 結構化輸出](https://ai.google.dev/gemini-api/docs/generate-content/structured-output)、[xAI 結構化輸出](https://docs.x.ai/developers/model-capabilities/text/structured-outputs)。

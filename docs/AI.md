@@ -58,3 +58,9 @@ node tests/ai-errors.cjs
 推送 main 後由 GitHub Pages 發布根目錄；沒有資料庫遷移。回退本次功能可使用 Git revert 對應提交再推送，不刪除既有規範儲存資料。API 模型、輸出契約與第三方套件升級時重跑上列檢查。報錯應提供畫面訊息與是否為部分結果，不提供 API Key 或未授權論文內容。
 
 官方參考：[OpenAI 結構化輸出](https://developers.openai.com/api/docs/guides/structured-outputs)、[Crossref REST API](https://www.crossref.org/documentation/retrieve-metadata/rest-api/)。
+
+## 多供應商更新（2026-09-21）
+
+新增 Google Gemini generateContent 與 xAI Grok Chat Completions，沿用相同 schema、文件處理與修改前核對。原有 OpenAI 單一供應商描述現已擴充為使用者所選服務。切換供應商時清除金鑰並重設傳送同意，報告保留執行當時的供應商，不隨後續選單變更而改寫。三家均只允許固定官方端點，不自動重試到另一家；沒有共用後端金鑰。
+
+Gemini 與 Grok 模擬整合測試通過：供應商切換、各自驗證標頭與 schema、成功輸出、token 用量、報告名稱、截斷拒絕及 403 安全錯誤。OpenAI 原有完整測試亦通過。未提供實際金鑰，未進行付費模型輸出驗證。執行 `node tests/ai-providers.cjs` 可重現新測試。
