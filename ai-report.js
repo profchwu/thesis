@@ -1,8 +1,8 @@
-import {referenceComparisonBlocks,revisedResultBlocks,COMPARISON_CSS} from './reference-comparison.js?v=20260921-direct8';
-import {checkReferenceFormat,referenceSuggestion} from './reference-format.js?v=20260921-direct8';
-import {assessReference} from './reference-assessment.js?v=20260921-direct8';
-import {AUTHOR,DISCLAIMER} from './notice.js?v=20260921-direct8';
-import {LABELS,RULE_LABELS} from './ai-core.js?v=20260921-direct8';
+import {referenceComparisonBlocks,revisedResultBlocks,COMPARISON_CSS} from './reference-comparison.js?v=20260921-unified9';
+import {checkReferenceFormat,referenceSuggestion} from './reference-format.js?v=20260921-unified9';
+import {assessReference} from './reference-assessment.js?v=20260921-unified9';
+import {AUTHOR,DISCLAIMER} from './notice.js?v=20260921-unified9';
+import {LABELS,RULE_LABELS} from './ai-core.js?v=20260921-unified9';
 export const escapeHTML=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const e=escapeHTML;
 const severity={problem:'需人工修正／核對',review:'待查證',info:'資訊'};

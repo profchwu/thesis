@@ -1,4 +1,4 @@
-import {assessReference} from './reference-assessment.js?v=20260921-direct8';
+import {assessReference} from './reference-assessment.js?v=20260921-unified9';
 const norm=s=>String(s||'').normalize('NFKC').toLowerCase().replace(/[^\p{L}\p{N}]/gu,'');
 export function checkReferenceFormat(row,style='APA 7'){
  const a=assessReference(row),c=a.candidate,t=row.text||'',issues=[],parts=[];

@@ -1,11 +1,11 @@
-import {referenceComparisonBlocks,revisedResultBlocks,COMPARISON_CSS} from './reference-comparison.js?v=20260921-direct8';
-import {openReport} from './report-view.js?v=20260921-direct8';
-import {checkReferenceFormat,formatHTML,referenceSuggestion} from './reference-format.js?v=20260921-direct8';
-import {getAIContext,setAILock} from './app.js?v=20260921-direct8';
-import {DATABASES,verifySources,saveManualCheck} from './sources.js?v=20260921-direct8';
-import {referenceStart,referenceRows,checkStatistics} from './ai-core.js?v=20260921-direct8';
-import {assessReference} from './reference-assessment.js?v=20260921-direct8';
-import {reportHTML,exportPDF,escapeHTML as e} from './ai-report.js?v=20260921-direct8';
+import {referenceComparisonBlocks,revisedResultBlocks,COMPARISON_CSS} from './reference-comparison.js?v=20260921-unified9';
+import {openReport} from './report-view.js?v=20260921-unified9';
+import {checkReferenceFormat,formatHTML,referenceSuggestion} from './reference-format.js?v=20260921-unified9';
+import {getAIContext,setAILock} from './app.js?v=20260921-unified9';
+import {DATABASES,verifySources,saveManualCheck} from './sources.js?v=20260921-unified9';
+import {referenceStart,referenceRows,checkStatistics} from './ai-core.js?v=20260921-unified9';
+import {assessReference} from './reference-assessment.js?v=20260921-unified9';
+import {reportHTML,exportPDF,escapeHTML as e} from './ai-report.js?v=20260921-unified9';
 const comparisonStyle=document.createElement('style');comparisonStyle.textContent=COMPARISON_CSS;document.head.append(comparisonStyle);
 const $=s=>document.querySelector(s),dialog=$('#basic-dialog');let formatIssuePage=0;let report=null,controller=null,page=0,statPage=0,selectionDoc=null;
 export function getBasicReport(){return report;}
@@ -45,4 +45,3 @@ function renderFormat(){const select=$('#basic-format-ref'),previous=select.valu
 $('#basic-format-ref').onchange=()=>{formatIssuePage=0;renderFormat();};$('#format-issue-prev').onclick=()=>{formatIssuePage--;renderFormat();};$('#format-issue-next').onclick=()=>{formatIssuePage++;renderFormat();};
 
 $('#basic-web').onclick=()=>{if(report)openReport(reportHTML(report));};
-$('#home-reference').onclick=()=>{$('#open-basic').click();$('#basic-refs').checked=true;$('#basic-stats').checked=false;showTab('settings');message('參考文獻格式檢核：確認標題起點與 APA 7／IEEE → 同意書目資料庫查詢 → 開始基本檢查。全程不需 AI Key。');};
