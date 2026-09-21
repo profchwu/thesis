@@ -1,4 +1,5 @@
-import {LABELS,RULE_LABELS} from './ai-core.js?v=20260921-ai1';
+import {AUTHOR,DISCLAIMER} from './notice.js?v=20260921-notice1';
+import {LABELS,RULE_LABELS} from './ai-core.js?v=20260921-notice1';
 export const escapeHTML=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const e=escapeHTML;
 const severity={problem:'需修正',review:'待確認',info:'資訊'};
@@ -11,6 +12,7 @@ export function reportHTML(report){let blocks=[];const add=(title,text)=>{blocks
   if(report.registry.length){blocks.push('<h2>文獻查證紀錄</h2>');report.registry.forEach((r,i)=>{blocks.push(`<h3>${i+1}. 第 ${r.paragraph} 段｜${e(r.status)}</h3>`);blocks.push(...paragraphs(r.text).match(/<p>[\s\S]*?<\/p>/g));blocks.push(`<p class="source">查詢方法：${e(r.method)}<br>時間：${e(r.checkedAt)}<br><a href="${e(r.source)}">Crossref 查詢紀錄</a></p>`);for(const c of r.candidates){blocks.push(...paragraphs(`候選紀錄：${c.title}\n${c.authors.join(', ')} (${c.year??'—'}) · ${c.journal}\nDOI：${c.doi}\n${c.url}\n僅確認資料庫紀錄，不代表論文引用的主張已獲全文支持。`).match(/<p>[\s\S]*?<\/p>/g));if(c.updates?.length)blocks.push(`<p>Crossref 更新關聯：${e(JSON.stringify(c.updates))}。需查看更新內容，不能直接推定本篇已撤稿。</p>`);}});}
   if(report.edits.length){blocks.push('<h2>參考文獻格式修訂建議</h2>');if(report.targetStyle==='APA 7')blocks.push('<p>下載修訂 Word 時可勾選：同時套用 APA 7 懸掛縮排 1.27 公分、雙倍行距。若學校另有規範可取消；本報告列的是建議，並非已套用紀錄。</p>');report.edits.forEach((r,i)=>{blocks.push(`<h3>${i+1}. 第 ${r.paragraph} 段 · ${e(report.targetStyle)}</h3>`);add('修改前',r.before);add('修改後（尚未自動套用）',r.after);add('理由',r.reason);});}
   add('限制與使用說明','AI 可能判讀錯誤。Crossref 未找到紀錄、沒有 DOI 或查詢失敗，均不能證明文獻虛假；資料庫紀錄存在也不等於題名、作者與本文主張正確。未取得來源全文時，無法確認引用是否忠實。統計檢查只核對本文敘述與可解析的數值；無原始資料不能驗證分析過程、假設、資料品質或研究結論。此報告不代表學校認證、學術不端認定或完整的文獻系統性查證。');
+  add('網站作者',AUTHOR);add('免責聲明',DISCLAIMER);
   add('傳輸與用量',`選取的資料已由瀏覽器送到 OpenAI；查證所需的書目文字或 DOI 送到 Crossref。未將 API Key 存入報告或網站儲存空間。\nAPI 請求完成 ${report.completed} / ${report.planned} 批；累計輸入 ${report.inputTokens} tokens、輸出 ${report.outputTokens} tokens（以服務回傳資訊為準，不是費用報價）。`);
   return `<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>論文進階檢查報告</title><style>${REPORT_CSS}</style></head><body><main id="report-flow">${blocks.map(b=>`<div class="report-block">${b}</div>`).join('')}</main></body></html>`;
 }
