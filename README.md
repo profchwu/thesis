@@ -94,3 +94,15 @@ Gemini／Grok 已用模擬 API 驗證完整操作、請求格式、回應解析�
 公開 API 實測：Crossref、OpenAlex、PubMed 均成功查得 DOI `10.1056/NEJMoa2034577`。自動測試 `node tests/sources.cjs` 驗證來源隔離、部分失敗、人工待確認及網址檢核；`ai-smoke.cjs` 驗證人工紀錄可進入 HTML／PDF。
 
 來源說明：[OpenAlex API 與金鑰](https://help.openalex.org/api/authentication/)、[PubMed API](https://pmc.ncbi.nlm.nih.gov/tools/get-metadata/)、[NCBI 聲明](https://www.ncbi.nlm.nih.gov/About/disclaimer.html)、[華藝](https://www.airitilibrary.com/)、[臺灣博碩士論文網](https://ndltd.ncl.edu.tw/)。
+
+## RefCheck 外部參考工具
+
+網站入口：[https://ref-check.org/](https://ref-check.org/)，另提供官方操作手冊及隱私政策連結。
+
+頁首「RefCheck 文獻工具」不需 AI 金鑰：上傳 Word 後，依參考文獻標題擷取後續書目（遇附錄停止），逐段檢視，再複製或下載 TXT，至外站自行貼上／上傳及確認。跨段書目可能需要使用者在外站重新確認。本站不改寫原文，不會自動送出。
+
+RefCheck 檢查後下載 UTF-8 TXT／CSV，可匯回本系統原樣留存，匯出含來源標示的 HTML／PDF；若已有 AI 分析，重新下載該報告也會附上外部內容。匯入內容只作外部附件，不自動匹配書目或標示已通過，不傳給 AI。限 1 MB、10 萬字元，僅本次頁面保留，更換論文或規範將清除。
+
+截至 2026-09-21，查閱 RefCheck 首頁、About、ManualZh、隱私政策及公開搜尋，未找到可供本站串接的公開 API 文件。**沒有實作自動送出及自動取回結果。**如需全自動串接，必須先取得站方正式 API／合作方式及相關權限，不能將網頁互動或未公開端點當作穩定服務介面。
+
+依 [RefCheck 官方手冊](https://ref-check.org/ManualZh) 支援貼上文字及下載 TXT／CSV。結果只供參考；未找到不等於虛構，找到相似題名也不保證所有書目欄位及引用主張正確。

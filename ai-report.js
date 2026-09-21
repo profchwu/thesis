@@ -1,5 +1,5 @@
-import {AUTHOR,DISCLAIMER} from './notice.js?v=20260921-sources1';
-import {LABELS,RULE_LABELS} from './ai-core.js?v=20260921-sources1';
+import {AUTHOR,DISCLAIMER} from './notice.js?v=20260921-refcheck1';
+import {LABELS,RULE_LABELS} from './ai-core.js?v=20260921-refcheck1';
 export const escapeHTML=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const e=escapeHTML;
 const severity={problem:'需人工修正／核對',review:'待查證',info:'資訊'};
@@ -34,9 +34,10 @@ export function reportHTML(report){const blocks=[],findings=report.findings||[],
   section('06','學術倫理與作者核對清單','依人類主導、研究誠信、透明揭露與資料保護原則設計；仍須遵守所屬學校、研究倫理審查及投稿期刊的具體規定。');
   for(const item of ['確認統計數值、樣本數、p 值與研究結論均未被系統更改；若發現疑點，由作者回查原始資料及分析程式。','確認參考文獻的作者、題名、年份、DOI 與文字內容均未被改寫；以原始來源判斷錯誤。','逐項核對紅色／粗體標示的問題；不得將 AI 判讀直接視為確定事實或學術不端判定。','確認上傳與傳送資料的權限，避免未經授權傳送個資、受試者資料、機密資料或受限制手稿。','依學校與期刊要求揭露所用 AI 工具、模型、用途及人工覆核方式；作者承擔最終責任。','保留原始文件、分析輸出與本報告，確認最終版排版及所有人工修改。'])text('□ 人工覆核項目',item);
   add('<p class="source">倫理參考：<a href="https://doi.org/10.24318/cCVRZBms">COPE｜Authorship and AI tools</a>；<a href="https://www.unesco.org/en/articles/guidance-generative-ai-education-and-research">UNESCO｜Guidance for generative AI in education and research</a>。本工具不代表上述組織認證。</p>');
+  if(report.externalReview){section('06A','RefCheck 外部報告（使用者匯入）','以下原樣呈現匯入文字；不自動配對、不認定通過、不修改論文。');const x=report.externalReview;text('來源與匯入紀錄',`${x.source}\n檔案：${x.fileName}\n時間：${x.importedAt}\n${x.origin}`);text('外部報告原始內容',x.text);}
   section('07','透明紀錄、限制與聲明');
   text('AI 使用紀錄',`工具：論文完稿室；供應商：${report.provider||'OpenAI'}；模型：${report.model}；時間：${report.date}。\n用途：${report.tasks.map(x=>LABELS[x]).join('、')}。只提供檢核與排版建議，未自動修改統計數值、研究結論或參考文獻文字。人工覆核狀態：尚待使用者完成。`);
-  text('資料傳輸與用量',`選取模組的內容按批次傳至 ${report.provider||'OpenAI'}；文獻查詢所需書目或 DOI 傳至勾選的 Crossref、OpenAlex、PubMed；人工來源由使用者自行開啟查詢。金鑰不儲存在報告或網站儲存空間。\n完成 ${report.completed}/${report.planned} 批；輸入 ${report.inputTokens} tokens、輸出 ${report.outputTokens} tokens（以服務回傳為準，不是費用報價）。`);
+  text('資料傳輸與用量',report.planned===0?'本次未執行 AI 批次。外部報告由使用者匯入，在本機整理，未傳給 AI。':`選取模組的內容按批次傳至 ${report.provider||'OpenAI'}；文獻查詢所需書目或 DOI 傳至勾選的 Crossref、OpenAlex、PubMed；人工來源由使用者自行開啟查詢。金鑰不儲存在報告或網站儲存空間。\n完成 ${report.completed}/${report.planned} 批；輸入 ${report.inputTokens} tokens、輸出 ${report.outputTokens} tokens（以服務回傳為準，不是費用報價）。`);
   text('檢查限制','AI 可能產生誤判、遺漏或無法查證的結果。圖片中的文字、視覺版面與未抽取內容可能不在本次範圍。未取得來源全文時不能確認引用忠實性；沒有原始資料不能驗證統計分析過程、研究假設或資料真實性。由文中統計量計算的機率僅用於比較，不能當作替換值。此報告不代表學校認證或完整倫理合規證明。');
   text('網站作者',AUTHOR);text('免責聲明',DISCLAIMER);
   return `<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>論文完稿室｜詳細分析報告</title><style>${REPORT_CSS}</style></head><body><main id="report-flow">${blocks.map(b=>`<div class="report-block">${b}</div>`).join('')}</main></body></html>`;
