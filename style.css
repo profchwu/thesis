@@ -7,3 +7,5 @@
 
 @media(min-width:761px){#ai-options>.ai-config-grid:first-child{grid-template-columns:1fr 1.3fr 1fr}}
 
+
+#ai-findings li[data-severity="problem"]{border-left:5px solid #b42332}#ai-findings li[data-severity="problem"] strong,#ai-findings li[data-severity="problem"] p:first-of-type{color:#a61d2d;font-weight:700}#ai-findings li[data-severity="review"] strong{color:#85571b;font-weight:700}

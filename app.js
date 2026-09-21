@@ -1,4 +1,4 @@
-import {AUTHOR,DISCLAIMER} from './notice.js?v=20260921-brand1';
+import {AUTHOR,DISCLAIMER} from './notice.js?v=20260921-ethics1';
 import {refreshChecklist} from './checklist.js';
 import {readRequirement, openDocx, inspectDocx, formatDocx} from './engine.js';
 const $=s=>document.querySelector(s);

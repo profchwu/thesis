@@ -1,66 +1,42 @@
-# AI 進階分析：實作與驗證
+# 詳細分析報告與學術倫理邊界
 
-## 需求與實作對照
+更新日期：2026-09-21。本文件取代舊版包含「書目文字修訂」的功能說明。
 
-| 使用需求 | 實作 | 驗證 |
-| --- | --- | --- |
-| 可選 AI、自行輸入金鑰 | AI 預設關閉，金鑰只用於固定 OpenAI 端點；傳送前同意 | 關閉、缺少同意時零 API 請求；執行後輸入框清空；儲存空間與報告沒有金鑰 |
-| 分析學校規範 | Responses 結構化輸出；每個設定須附可在原文找到的證據；數值設限 | 模擬規範回應中無原文依據的設定被排除 |
-| 常見引用格式檢查及修訂 | 可複選標準，單一修訂目標；逐筆核准；只替換完全匹配的書目段落 | 原文不匹配禁止修改；下載檔正文及未勾選文獻保留，指定斜體保留；APA 可選懸掛縮排和雙行間距 |
-| DOI／引用查證 | Crossref 精確 DOI 或書目搜尋；AI 接收候選書目及可用摘要，提供有限證據判讀 | 模擬成功／查無紀錄；實際瀏覽器成功查得 10.1038/nphys1170，題名 Measured measurement |
-| 統計檢查 | p 值範圍、負標準差、反向 CI；jStat 重算文字中可辨識的 t/F/卡方上尾或雙尾機率；AI 檢視敘述 | 已驗證異常值、t／卡方重算及中文標準差辨識 |
-| HTML 排版及下載 PDF | 全部文字 HTML 逸出；A4 分頁、頁碼；html2canvas + pdf-lib | 測試報告 4 頁，中文可見且完整；HTML 注入字串呈現為文字 |
-| 簡潔 UI | 設定、檢核、規範建議、書目修訂分頁；檢核逐項呈現 | 桌面 1366×768 與手機 390×844 檢查；無水平溢出 |
+## 允許與禁止
 
-## 架構及限制
+- 允許：檢查學校規範、引用錯誤、統計報告疑點，列出證據與人工查核步驟；預覽後套用紙張、邊界、字型、字級、行距、顏色及頁碼等排版設定。
+- 禁止：改寫論文或參考文獻文字，補寫書目、替換作者／年份／DOI、變更統計數值或研究結論。沒有「接受全部文字修訂」或書目改寫下載入口。
+- 技術邊界：AI JSON schema 移除 edits；回應處理只回傳 summary、findings、rules、usage，丟棄額外欄位。舊 updateReferences 函式與 UI 操作均已刪除。統計比較結果只留在報告，不傳給文件寫入流程。
+- 所有排版規則須落在允許清單內並有規範原文依據，經使用者預覽確認才套用。原文件不覆蓋。
 
-靜態 GitHub Pages；一般格式修改仍在本機執行。使用者自行選用的 BYOK 流程直接從瀏覽器呼叫 OpenAI Responses API（`store:false`）和 Crossref，不設共用開發者金鑰。前端無法對有權執行的網站程式、擴充功能或同機使用者隱藏記憶體中的金鑰；不得改成把共用服務金鑰打包進網站。若未來改用平台統一付費，應另建後端保管金鑰、認證和額度限制。
+## 報表設計
 
-文件與外部書目均視為不可信資料。模型指令禁止執行文件內要求；不允許 AI 操作外部工具或直接修改文件。修訂的段落 ID、原文與允許範圍均再次核對。包含欄位、公式、追蹤修訂等特殊內容的書目不自動改寫。
+深綠封面、分級統計卡、編號問題索引、逐項詳細證據、格式依據、原始書目與候選資料來源、作者覆核清單及透明使用紀錄。紅色與粗體標示需人工修正／核對處，金色粗體標示未確認事項，不只靠顏色辨識。
 
-API 輸出不完整、401、429、網路失敗及取消均不宣稱全部完成；已產生的部分結果可供下載。每批文字上限 14,000 字元，書目批次 9,000 字元；總上限與資料傳送說明列於 UI／README。大型報告可能受瀏覽器記憶體限制；單項無法安全分頁時提示改用 HTML 列印，避免裁切後交付。
+每項列出段落位置、原文證據、疑點說明、人工查核步驟及判讀來源。段落編號不等同 Word 頁碼。報告列出執行狀態、成功批次、失敗原因及限制，不將「未發現」寫為「完全正確」，不給予沒有驗證依據的品質分數。
 
-統計重算基於已報告且可能已四捨五入的統計量，t 假設雙尾、F/卡方上尾，不代表重新分析原始資料。Crossref 候選結果須核對題名作者；沒有來源全文時不能斷言引文支持研究主張，也不判定學術不端。APA 引用更新包含文字與 AI 建議的斜體，選用的段落排版可與校規衝突，使用者可取消。
+HTML 所有內容逸出，URL 限 HTTP(S)。PDF 從 HTML 以 A4 分頁產生，附頁碼，內容過長時拒絕裁切並提示使用 HTML 列印。PDF 為圖像頁面，搜尋與複製文字請用 HTML。
 
-PDF 由 HTML 頁面轉成圖像，文字不可選取；完整可搜尋文字保留於 HTML。報告列出建議及完成範圍，不把未勾選建議描述為已修改。
+## 研究誠信依據
 
-## 驗證紀錄（2026-09-21）
+參考 [COPE Authorship and AI tools](https://doi.org/10.24318/cCVRZBms) 的作者責任與 AI 使用透明揭露，以及 [UNESCO 教育研究生成式 AI 指引](https://www.unesco.org/en/articles/guidance-generative-ai-education-and-research) 的人類主導原則。這是設計依據，不是所有機構的倫理合規認證。使用者需依學校、期刊、IRB 和資料授權要求自行核對及揭露。
 
-- Edge 自動化：完整匯入、AI 開關與同意、3 個模擬 API 批次、查證來源、報告與 Word 下載；零頁面程式錯誤。
-- 失敗路徑：401、429、未完成輸出、無法解析輸出均顯示明確訊息，不回顯服務錯誤內的敏感內容。
-- Word 解析：只選取的書目段落變更，正文與其他書目不變，斜體保留。
-- 基本功能回歸：清大 PDF 11 項設定、先預覽後套用、原文／圖片／公式／表格／前置頁保留、規範記憶、重複上傳去重、無效檔案及失效預覽阻擋，均通過。
-- 真實 Crossref 公開 API 連線通過。OpenAI 沒有使用實際付費金鑰測試，結構化輸入輸出與 UI 流程以模擬 API 驗證；實際模型品質、額度與帳戶權限需使用者自己的金鑰確認。
+未查得文獻不是造假的證明；找到 Crossref 紀錄也不代表引用忠實。沒有來源全文或原始研究資料時，必須保留不確定性。AI 不擔任作者，不代替研究者做最終判斷。
 
-## 重現測試
+## API 與資料
 
-在儲存庫根目錄安裝 Node.js、Python、Playwright 與 python-docx：
+OpenAI Responses、Gemini generateContent、xAI Grok Chat Completions 使用同一檢核 schema。金鑰只在本次瀏覽器記憶體使用，切換供應商會清空並重設同意，不放在網址、localStorage、sessionStorage 或報告。每一家只使用固定官方端點，失敗不自動改送另一家。使用者須信任網站與瀏覽器環境，確保有權傳送資料；平台共用金鑰若日後需要必須另建後端保管。
 
-```text
-npm install --no-save playwright
-npx playwright install chromium
-python -m pip install python-docx
-python tests/create_fixture.py
-node tests/server.cjs
-```
+Crossref 查詢不攜帶 AI 金鑰。規範保存在本機瀏覽器，論文不持久保存。供應商資料處理及 API 費用依各家條款。
 
-保持預覽伺服器執行，在另一個終端執行：
+## 驗證
 
-```text
-node tests/ai-smoke.cjs
-node tests/ai-errors.cjs
-```
+- ai-smoke：模擬模型回傳舊 edits，確認無文字套用入口、無 updateReferences 匯出、schema 無 edits；HTML 不含替換段落，包含紅色證據標記、研究倫理說明與來源。
+- 產生詳細 PDF 並逐頁檢視 9 頁測試報告，確認中文字、分級色彩及頁尾完整。
+- ai-providers：Gemini／Grok 的標頭隔離、供應商切換、回應／用量解析、截斷與 403，仍使用同一只讀檢核流程。
+- 原有 Word 排版回歸：原文、表格、公式、圖片與前置頁內容保留；預覽確認及下載正常。
+- 未使用真實付費金鑰驗證 AI 判讀品質，不宣稱模型一定遵守所有提示或沒有錯誤；實際防止修改依靠移除文字寫入路徑。
 
-前者使用模擬 API，絕不使用付費金鑰。後者另查詢一次公開 Crossref DOI；無法連線時會輸出未完成查證狀態。測試輸出位於忽略提交的 `tests/output/`。Windows 可設定 `BROWSER_CHANNEL=msedge` 使用已安裝的 Edge。
+本機重現：安裝 Playwright 及 python-docx，執行 `python tests/create_fixture.py`，啟動 `node tests/server.cjs`，再執行 `node tests/ai-smoke.cjs` 及 `node tests/ai-providers.cjs`。測試輸出位於忽略提交的 tests/output。Windows 可設定 BROWSER_CHANNEL=msedge。
 
-## 發布與維護
-
-推送 main 後由 GitHub Pages 發布根目錄；沒有資料庫遷移。回退本次功能可使用 Git revert 對應提交再推送，不刪除既有規範儲存資料。API 模型、輸出契約與第三方套件升級時重跑上列檢查。報錯應提供畫面訊息與是否為部分結果，不提供 API Key 或未授權論文內容。
-
-官方參考：[OpenAI 結構化輸出](https://developers.openai.com/api/docs/guides/structured-outputs)、[Crossref REST API](https://www.crossref.org/documentation/retrieve-metadata/rest-api/)。
-
-## 多供應商更新（2026-09-21）
-
-新增 Google Gemini generateContent 與 xAI Grok Chat Completions，沿用相同 schema、文件處理與修改前核對。原有 OpenAI 單一供應商描述現已擴充為使用者所選服務。切換供應商時清除金鑰並重設傳送同意，報告保留執行當時的供應商，不隨後續選單變更而改寫。三家均只允許固定官方端點，不自動重試到另一家；沒有共用後端金鑰。
-
-Gemini 與 Grok 模擬整合測試通過：供應商切換、各自驗證標頭與 schema、成功輸出、token 用量、報告名稱、截斷拒絕及 403 安全錯誤。OpenAI 原有完整測試亦通過。未提供實際金鑰，未進行付費模型輸出驗證。執行 `node tests/ai-providers.cjs` 可重現新測試。
+發布：GitHub Pages main/root。回退請使用 git revert；注意回退至舊版可能重新開啟已禁止的書目改寫功能，不能把它當作可接受的正式服務版本。
