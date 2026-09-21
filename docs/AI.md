@@ -72,3 +72,8 @@ OK 必須有候選的完整題名、第一作者姓名片段、年份及（原�
 
 ## Gemini 完整模型清單
 新增 models.list 即時載入，跟隨 nextPageToken 取得全部分頁，依模型 ID 去重排序。下拉式選单顯示所有模型，不支援 generateContent 者禁用；生成方法支援不等於文字、JSON、額度或實際存取已驗證。失敗不保留部分清單，金鑰／供應商切換或關閉會清除；不傳送論文、不將金鑰放網址。tests/gemini-models.cjs 驗證分頁、選取、非生成模型禁用、第二頁失敗與金鑰切換。官方依據：https://ai.google.dev/api/models#method:-models.list 。
+
+## 基本引用格式檢查
+新增 reference-format.js。APA 7／IEEE 的期刊論文基本格式檢查隨書目查證一起執行，與書目 OK 分開顯示；可篩選格式缺漏／待確認，逐項翻頁檢視，HTML／PDF 同步列出紅色粗體問題、格式範本與來源欄位建議。Crossref 保留文獻類型、結構化姓名、文章編號；僅在題名相符、DOI 不衝突且來源明確為 journal-article 時給出期刊欄位建議。其他類型或未匹配文獻僅提供待確認與範本，不補造資料。
+檢查包含 APA 年份日期結構、作者列法、DOI 連結，IEEE 引用編號，以及來源提供的期刊、卷期、頁碼、文章編號。純文字不能確認 Word 斜體／縮排，亦非完整樣式驗證；不將建議寫入論文。欄位示例保留來源題名，不自動猜測英文專有名詞大小寫。tests/reference-format.cjs 和 basic.cjs 驗證日期、PP、卷頁缺漏、文章編號、類型限制、報告紅字及原文不變。
+參考規範：https://apastyle.apa.org/style-grammar-guidelines/references/examples/journal-article-references ； https://journals.ieeeauthorcenter.ieee.org/wp-content/uploads/sites/7/IEEE_Reference_Guide.pdf 。
