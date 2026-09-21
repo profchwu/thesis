@@ -1,6 +1,6 @@
-import {getAIContext,setAILock,applyAIRules} from './app.js?v=20260921-ethics1';
-import {PROVIDERS,LABELS,RULE_LABELS,referenceStart,referenceRows,batches,requestAnalysis,verifyReference,checkStatistics} from './ai-core.js?v=20260921-ethics1';
-import {reportHTML,exportPDF} from './ai-report.js?v=20260921-ethics1';
+import {getAIContext,setAILock,applyAIRules} from './app.js?v=20260921-guide1';
+import {PROVIDERS,LABELS,RULE_LABELS,referenceStart,referenceRows,batches,requestAnalysis,verifyReference,checkStatistics} from './ai-core.js?v=20260921-guide1';
+import {reportHTML,exportPDF} from './ai-report.js?v=20260921-guide1';
 const $=s=>document.querySelector(s),dialog=$('#ai-dialog');let selectionDoc=null,controller=null,report=null,snapshot=null,viewPage=0,selectedRules=new Set();
 function message(text,error=false){$('#ai-status').textContent=text;$('#ai-status').classList.toggle('error',error);}
 function download(blob,name){const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),30000);}

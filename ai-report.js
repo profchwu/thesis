@@ -1,5 +1,5 @@
-import {AUTHOR,DISCLAIMER} from './notice.js?v=20260921-ethics1';
-import {LABELS,RULE_LABELS} from './ai-core.js?v=20260921-ethics1';
+import {AUTHOR,DISCLAIMER} from './notice.js?v=20260921-guide1';
+import {LABELS,RULE_LABELS} from './ai-core.js?v=20260921-guide1';
 export const escapeHTML=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const e=escapeHTML;
 const severity={problem:'需人工修正／核對',review:'待查證',info:'資訊'};
