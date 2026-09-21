@@ -1,4 +1,4 @@
-import {LABELS,RULE_LABELS} from './ai-core.js';
+import {LABELS,RULE_LABELS} from './ai-core.js?v=20260921-ai1';
 export const escapeHTML=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const e=escapeHTML;
 const severity={problem:'需修正',review:'待確認',info:'資訊'};
