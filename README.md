@@ -16,7 +16,7 @@
 
 - 一般排版不需要 API Key，採用文字規則擷取及 Word 文件格式處理。
 - 可選用 AI 進階分析：支援 OpenAI、Google Gemini、xAI Grok；選擇供應商後輸入對應 API Key，模型可自行調整。
-- 一般排版在瀏覽器記憶體內處理，不上傳論文。AI 啟用並同意傳送後，所選模組需要的規範、論文文字、書目及查詢結果會送到所選 AI 供應商；DOI 或書目文字會送到 Crossref。API 使用可能產生費用。
+- 一般排版在瀏覽器記憶體內處理，不上傳論文。AI 啟用並同意傳送後，所選模組需要的規範、論文文字、書目及查詢結果會送到所選 AI 供應商；DOI 或書目文字會送到所選的 Crossref、OpenAlex、PubMed。API 使用可能產生費用。
 - 金鑰只供本次分析使用，不寫入 GitHub、localStorage、sessionStorage 或報告；開始分析後清空輸入框、結束後釋放金鑰變數。瀏覽器 BYOK 仍需信任網站程式與瀏覽器環境；請勿放入開發者共用金鑰。
 - 規範原文存於目前網站的瀏覽器儲存空間，不跨裝置或網址同步；清除網站資料會移除。
 - 支援紙張、邊界、字型、字級、行距、黑色文字及頁尾置中設定。
@@ -31,7 +31,7 @@
 3. 可複選 APA 7、Harvard、IEEE、MLA 9、Chicago 等檢查標準。**參考文獻僅查錯，不提供替換文字，也不自動修改作者、題名、年份、DOI 或引文編號。**
 4. **統計僅查錯，不改動任何數值、研究結論或原始資料。**由文中統計量算出的 p 值只作診斷比較，不能用作替換值。
 5. 檢核逐項顯示，需人工修正／核對處用紅色與粗體標示；待查證項目用金色粗體。只有具原文依據的排版設定可回工作台預覽、確認後套用。
-6. 下載詳細 HTML／PDF 報告：總覽、問題索引、位置與原文證據、錯誤原因、人工查核步驟、格式依據、完整 Crossref 查詢紀錄、研究倫理清單、AI 使用紀錄及限制。
+6. 下載詳細 HTML／PDF 報告：總覽、問題索引、位置與原文證據、錯誤原因、人工查核步驟、格式依據、多來源查詢與人工確認紀錄、研究倫理清單、AI 使用紀錄及限制。
 
 AI schema 及操作介面均已移除文獻文字替換功能；舊版的書目修訂 Word 功能不再提供。PDF 由 HTML 分頁轉成圖像以保留中文字型；要搜尋或複製文字請使用 HTML。
 
@@ -74,3 +74,23 @@ GitHub Pages 設定：`main` 分支、`/ (root)` 目錄。推送更新後由 Git
 Gemini／Grok 已用模擬 API 驗證完整操作、請求格式、回應解析、錯誤處理與報告，尚未以付費金鑰驗證實際模型輸出。測試指令：`node tests/ai-providers.cjs`（沿用上述測試環境）。
 
 官方介面依據：[Gemini 結構化輸出](https://ai.google.dev/gemini-api/docs/generate-content/structured-output)、[xAI 結構化輸出](https://docs.x.ai/developers/model-capabilities/text/structured-outputs)。
+
+## 多來源文獻查證
+
+| 來源 | 方式 | 結果意義 |
+| --- | --- | --- |
+| Crossref | 自動 DOI／書目查詢 | 出版者登錄的候選紀錄 |
+| OpenAlex | 自動 DOI／書目查詢 | 跨領域學術索引候選紀錄 |
+| PubMed | 自動搜尋及讀取書目摘要 | 生醫文獻候選紀錄 |
+| 華藝、臺灣博碩士論文知識加值系統 | 官方入口＋人工登錄 | 使用者自行查詢後提供網址與依據 |
+| Web of Science、Scopus、Google Scholar | 官方入口＋人工登錄 | 可能需要授權、登入或手動搜尋 |
+
+在「查證來源」勾選自動資料庫；OpenAlex 可填自己的 API Key（與 AI 金鑰不同，只傳到 OpenAlex，使用後清除）。未填時嘗試匿名額度，失敗會明示；不會將未完成查詢當作查無文獻。
+
+分析後開啟「文獻查證」，選擇文獻與來源，複製 DOI／書目到官方網站查詢。華藝與論文網等來源必須填入實際官方紀錄／查詢網址、核對依據及結果，才會出現「使用者已登錄」；不能因為提供入口就列為查證成功。紀錄僅本次頁面保留，請重新下載報告保存。
+
+找到書目不代表全文主張正確。跨資料庫可能使用同一出版資料，不是多份獨立證據。查無資料、查詢失敗或登入限制均不能認定文獻虛假。統計與文獻內容仍僅查錯，不修改。
+
+公開 API 實測：Crossref、OpenAlex、PubMed 均成功查得 DOI `10.1056/NEJMoa2034577`。自動測試 `node tests/sources.cjs` 驗證來源隔離、部分失敗、人工待確認及網址檢核；`ai-smoke.cjs` 驗證人工紀錄可進入 HTML／PDF。
+
+來源說明：[OpenAlex API 與金鑰](https://help.openalex.org/api/authentication/)、[PubMed API](https://pmc.ncbi.nlm.nih.gov/tools/get-metadata/)、[NCBI 聲明](https://www.ncbi.nlm.nih.gov/About/disclaimer.html)、[華藝](https://www.airitilibrary.com/)、[臺灣博碩士論文網](https://ndltd.ncl.edu.tw/)。

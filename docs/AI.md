@@ -27,7 +27,7 @@ HTML 所有內容逸出，URL 限 HTTP(S)。PDF 從 HTML 以 A4 分頁產生，�
 
 OpenAI Responses、Gemini generateContent、xAI Grok Chat Completions 使用同一檢核 schema。金鑰只在本次瀏覽器記憶體使用，切換供應商會清空並重設同意，不放在網址、localStorage、sessionStorage 或報告。每一家只使用固定官方端點，失敗不自動改送另一家。使用者須信任網站與瀏覽器環境，確保有權傳送資料；平台共用金鑰若日後需要必須另建後端保管。
 
-Crossref 查詢不攜帶 AI 金鑰。規範保存在本機瀏覽器，論文不持久保存。供應商資料處理及 API 費用依各家條款。
+各資料庫查詢不攜帶 AI 金鑰。規範保存在本機瀏覽器，論文不持久保存。供應商資料處理及 API 費用依各家條款。
 
 ## 驗證
 
@@ -40,3 +40,11 @@ Crossref 查詢不攜帶 AI 金鑰。規範保存在本機瀏覽器，論文不�
 本機重現：安裝 Playwright 及 python-docx，執行 `python tests/create_fixture.py`，啟動 `node tests/server.cjs`，再執行 `node tests/ai-smoke.cjs` 及 `node tests/ai-providers.cjs`。測試輸出位於忽略提交的 tests/output。Windows 可設定 BROWSER_CHANNEL=msedge。
 
 發布：GitHub Pages main/root。回退請使用 git revert；注意回退至舊版可能重新開啟已禁止的書目改寫功能，不能把它當作可接受的正式服務版本。
+
+## 多來源查證更新
+
+新增 sources.js，逐來源保存 outcome、查詢方式／URL／時間與候選清單。OpenAlex 金鑰只可傳至 api.openalex.org 的 Authorization 標頭，不能寫入來源 URL 或 AI payload。PubMed 每次請求至少間隔 400ms，使用 esearch＋esummary，無需 NCBI 金鑰；任一來源失敗不阻斷其他來源。
+
+Crossref／OpenAlex／PubMed 為自動查詢。華藝、國圖博碩士論文網、WoS、Scopus、Google Scholar 僅提供已核對的官方首頁，不假造深層搜尋參數或宣稱已登入查詢。人工登錄需官方網域網址、狀態與依據，標示使用者自行登錄／系統未獨立驗證。禁止含帳密或金鑰的網址、非 HTTP(S) 及其他網域。所有待確認狀態保留在報告中。
+
+2026-09-21 以真實 DOI 10.1056/NEJMoa2034577 實測：三個公開 API 皆回傳相符的題名及 DOI。模擬測試覆蓋 OpenAlex 429、其他來源繼續、金鑰隔離、人工結果與安全網址，並驗證文獻／統計仍沒有文字修改入口。人工資料庫未自動抓取或繞過登入。
